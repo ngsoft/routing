@@ -39,6 +39,9 @@ trait ContainerBuilder
         return $this;
     }
 
+    /**
+     * @param class-string $class
+     */
     public function addDefinitionClass(string $class): static
     {
         $definitions = call_user_func(new $class());
