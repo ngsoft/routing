@@ -1,0 +1,45 @@
+{
+    "name": "ngsoft/routing",
+    "description": "",
+    "version": "1.0.0",
+    "keywords": [],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Aymeric Anger",
+            "role": "Developer",
+            "homepage": "https://github.com/ngsoft"
+        }
+    ],
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "config": {
+        "optimize-autoloader": true,
+        "sort-packages": true,
+        "process-timeout": 0,
+        "platform-check": false
+    },
+    "autoload": {
+        "psr-4": {
+            "NGSOFT\\": "src/"
+        }
+    },
+    "suggest": {},
+    "provide": {},
+    "require": {
+        "php": ">=8.2",
+        "guzzlehttp/psr7": "^2",
+        "nikic/fast-route": "^1",
+        "reindeer/symfony-middleware": "^1",
+        "symfony/http-foundation": "^7",
+        "symfony/http-kernel": "^7",
+        "symfony/psr-http-message-bridge": "^7",
+        "psr/http-server-handler": "^1",
+        "psr/http-server-middleware": "^1"
+    },
+    "require-dev": {
+        "symfony/var-dumper": "^7",
+        "friendsofphp/php-cs-fixer": "^3",
+        "jetbrains/phpstorm-attributes": "dev-master"
+    }
+}
