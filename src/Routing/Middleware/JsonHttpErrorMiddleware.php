@@ -86,9 +86,12 @@ class JsonHttpErrorMiddleware implements MiddlewareInterface
         } catch (HttpException $err)
         {
             return new JsonResponse(
-                ['success'    => false,
-                    'message' => $err->getMessage() ?: self::REASON_PHRASES[$err->getStatusCode()] ?? self::REASON_PHRASES[0]],
-                $err->getStatusCode()
+                [
+                    'success' => false,
+                    'message' => $err->getMessage() ?: self::REASON_PHRASES[$err->getStatusCode()] ?? self::REASON_PHRASES[0],
+                ],
+                $err->getStatusCode(),
+                $err->getHeaders()
             );
         }
     }
