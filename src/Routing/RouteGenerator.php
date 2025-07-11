@@ -22,7 +22,7 @@ readonly class RouteGenerator implements UrlGeneratorInterface
         {
             self::ABSOLUTE_PATH => $this->urlFor($name, $parameters, $query),
             self::ABSOLUTE_URL  => $this->fullUrlFor($name, $parameters, $query),
-            self::NETWORK_PATH  => preg_replace('#^\w:#', '', $this->fullUrlFor($name, $parameters, $query)),
+            self::NETWORK_PATH  => preg_replace('#^\w+:#', '', $this->fullUrlFor($name, $parameters, $query)),
             default             => throw new \InvalidArgumentException(sprintf('Invalid reference type: %d', $referenceType))
         };
     }
@@ -47,7 +47,7 @@ readonly class RouteGenerator implements UrlGeneratorInterface
             $url = $basePath . $url;
         }
 
-        return $url;
+        return '/' . ltrim($url, '/');
     }
 
     private function urlFor(string $routeName, array $data = [], array $queryParams = []): string
