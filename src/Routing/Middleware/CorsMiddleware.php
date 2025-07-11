@@ -6,6 +6,7 @@ namespace NGSOFT\Routing\Middleware;
 
 use NGSOFT\Routing\Internal\AttributeManager;
 use NGSOFT\Routing\Internal\FastRouteResult;
+use NGSOFT\Routing\Internal\MethodFiltering;
 use NGSOFT\Routing\RouteContext;
 use Reindeer\SymfonyMiddleware\Contracts\MiddlewareInterface;
 use Reindeer\SymfonyMiddleware\Contracts\RequestHandlerInterface;
@@ -15,6 +16,7 @@ use Symfony\Component\HttpFoundation\Response;
 class CorsMiddleware implements MiddlewareInterface
 {
     use AttributeManager;
+    use MethodFiltering;
 
     private ?int $maxAge           = null;
     private ?array $allowedOrigins = null;
@@ -59,7 +61,12 @@ class CorsMiddleware implements MiddlewareInterface
 
         if ( ! empty($this->allowedHeaders))
         {
-            $response->headers->set('Access-Control-Allow-Headers', implode(', ', $this->allowedHeaders));
+            $response->headers->set('Access-Control-Allow-Headers', $headers = implode(', ', $this->allowedHeaders));
+
+            if ($request->isMethod('OPTIONS'))
+            {
+                $response->headers->set('Allow', $headers);
+            }
         }
 
         if ( ! empty($this->exposedHeaders))
@@ -89,6 +96,31 @@ class CorsMiddleware implements MiddlewareInterface
         return $response;
     }
 
+    public function getMaxAge(): ?int
+    {
+        return $this->maxAge;
+    }
+
+    public function getAllowedOrigins(): ?array
+    {
+        return $this->allowedOrigins;
+    }
+
+    public function getAllowedMethods(): array
+    {
+        return $this->allowedMethods;
+    }
+
+    public function getAllowedHeaders(): array
+    {
+        return $this->allowedHeaders;
+    }
+
+    public function getExposedHeaders(): array
+    {
+        return $this->exposedHeaders;
+    }
+
     public function isOriginAllowed(string $origin): bool
     {
         if ( ! $this->allowedOrigins || in_array('*', $this->allowedOrigins))
@@ -106,7 +138,7 @@ class CorsMiddleware implements MiddlewareInterface
         return $this;
     }
 
-    public function setAllowedOrigins(?array $allowedOrigins): static
+    public function setAllowedOrigins(array $allowedOrigins): static
     {
         $this->overridden     = true;
         $this->allowedOrigins = $allowedOrigins;
@@ -123,21 +155,53 @@ class CorsMiddleware implements MiddlewareInterface
     public function setAllowedMethods(array $allowedMethods): static
     {
         $this->overridden     = true;
-        $this->allowedMethods = $allowedMethods;
+        $this->allowedMethods = $this->filterMethods($allowedMethods);
         return $this;
+    }
+
+    public function addAllowedHeaders(array $allowedHeaders): static
+    {
+        if (empty($allowedHeaders))
+        {
+            return $this;
+        }
+
+        $headers = $this->allowedHeaders;
+
+        if (false !== $pos = array_search('*', $headers, true))
+        {
+            array_splice($headers, $pos, 1);
+        }
+
+        foreach ($allowedHeaders as &$header)
+        {
+            $header = $this->normalizeHeader($header);
+        }
+
+        return $this->setAllowedHeaders(
+            array_values(
+                array_unique(array_merge($headers, $allowedHeaders))
+            )
+        );
     }
 
     public function setAllowedHeaders(array $allowedHeaders): static
     {
         $this->overridden     = true;
-        $this->allowedHeaders = $allowedHeaders;
+        $this->allowedHeaders = array_map(
+            fn ($header) => $this->normalizeHeader($header),
+            $allowedHeaders
+        );
         return $this;
     }
 
     public function setExposedHeaders(array $exposedHeaders): static
     {
         $this->overridden     = true;
-        $this->exposedHeaders = $exposedHeaders;
+        $this->exposedHeaders = array_map(
+            fn ($header) => $this->normalizeHeader($header),
+            $exposedHeaders
+        );
         return $this;
     }
 
@@ -146,6 +210,15 @@ class CorsMiddleware implements MiddlewareInterface
         $this->overridden = true;
         $this->useCache   = $useCache;
         return $this;
+    }
+
+    private function normalizeHeader(string $header): string
+    {
+        return preg_replace_callback(
+            '#-\w#',
+            fn ($matches) => strtoupper($matches[0]),
+            strtolower($header)
+        );
     }
 
     private function getConfigFromRoute(Request $request)
