@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace NGSOFT\Routing\Interface;
 
 use Psr\Container\ContainerInterface;

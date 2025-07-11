@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace NGSOFT\Routing;
 
 use NGSOFT\Routing\Definitions\DefaultDefinitions;
@@ -32,7 +34,7 @@ final class Routing implements RequestHandlerInterface, EmitterInterface, Middle
             ->addDefinitionClass(HttpMessageDefinitions::class);
     }
 
-    public function addConfiguration(callable $callback): static
+    public function addConfiguration(callable $callback): Routing
     {
         $callback($this->getRouter());
         return $this;

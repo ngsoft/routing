@@ -1,9 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 use PhpCsFixer\Config;
 use PhpCsFixer\Finder;
 
 $config = new Config();
+
+$config->setRiskyAllowed(true);
 
 $config->setRules([
     '@PSR12'                                 => true,
@@ -17,7 +21,7 @@ $config->setRules([
             'include_once', 'require', 'require_once', 'switch', 'try', 'while',
         ],
     ],
-    'declare_strict_types'                   => false,
+    'declare_strict_types'                   => true,
     'single_line_comment_style'              => false,
     'no_extra_blank_lines'                   => [
         'tokens' => ['curly_brace_block', 'extra', 'throw', 'use'],

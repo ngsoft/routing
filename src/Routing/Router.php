@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace NGSOFT\Routing;
 
 use FastRoute\DataGenerator\GroupCountBased as GroupCountBasedGenerator;
@@ -46,9 +48,24 @@ class Router implements Version, \Countable, \IteratorAggregate, RouteCollectorI
     {
         if ( ! $this->request)
         {
-            // prevent errors if used in cli context
-            $_SERVER['SERVER_NAME'] ??= 'localhost';
-            $_SERVER['SERVER_ADDR'] ??= '127.0.0.1';
+            // set default variables to prevent PSR-7 adapters errors when in CLI
+            $_SERVER = array_replace([
+                'SERVER_NAME'          => 'localhost',
+                'SERVER_PORT'          => 80,
+                'HTTP_HOST'            => 'localhost',
+                'HTTP_USER_AGENT'      => 'Symfony',
+                'HTTP_ACCEPT'          => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                'HTTP_ACCEPT_LANGUAGE' => 'en-us,en;q=0.5',
+                'HTTP_ACCEPT_CHARSET'  => 'ISO-8859-1,utf-8;q=0.7,*;q=0.7',
+                'REMOTE_ADDR'          => '127.0.0.1',
+                'SERVER_ADDR'          => '127.0.0.1',
+                'SCRIPT_NAME'          => '',
+                'SCRIPT_FILENAME'      => '',
+                'SERVER_PROTOCOL'      => 'HTTP/1.1',
+                'REQUEST_TIME'         => time(),
+                'REQUEST_TIME_FLOAT'   => microtime(true),
+            ], $_SERVER);
+
             $this->setRequest(Request::createFromGlobals());
         }
 

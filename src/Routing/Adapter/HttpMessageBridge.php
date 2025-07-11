@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace NGSOFT\Routing\Adapter;
 
 use GuzzleHttp\Psr7\HttpFactory;
