@@ -214,11 +214,11 @@ class CorsMiddleware implements MiddlewareInterface
 
     private function normalizeHeader(string $header): string
     {
-        return preg_replace_callback(
+        return ucfirst(preg_replace_callback(
             '#-\w#',
             fn ($matches) => strtoupper($matches[0]),
             strtolower($header)
-        );
+        ));
     }
 
     private function getConfigFromRoute(Request $request)
