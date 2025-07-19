@@ -84,7 +84,7 @@ class Router implements Version, \Countable, \IteratorAggregate, RouteCollectorI
         return $this->collector;
     }
 
-    public function map(array $methods, string $path, callable|string $handler): Route
+    public function map(array $methods, string $path, array|callable|string $handler): Route
     {
         if (empty($methods = $this->filterMethods($methods)))
         {

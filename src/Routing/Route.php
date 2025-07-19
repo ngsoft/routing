@@ -15,7 +15,7 @@ class Route implements MiddlewareCollectionInterface, \Stringable
 
     private readonly array $methods;
 
-    /** @var callable|string */
+    /** @var array|callable|string */
     private $handler;
 
     private ?string $name = null;
@@ -23,7 +23,7 @@ class Route implements MiddlewareCollectionInterface, \Stringable
     public function __construct(
         array $methods,
         private readonly string $pattern,
-        callable|string $handler,
+        array|callable|string $handler,
         private readonly ?RouteGroup $group = null,
     ) {
         $this->methods = $this->filterMethods($methods);
@@ -40,7 +40,7 @@ class Route implements MiddlewareCollectionInterface, \Stringable
         return $this->methods;
     }
 
-    public function getHandler(): callable|string
+    public function getHandler(): array|callable|string
     {
         return $this->handler;
     }

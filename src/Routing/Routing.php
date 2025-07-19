@@ -61,7 +61,7 @@ final class Routing implements RequestHandlerInterface, EmitterInterface, Middle
         $response->prepare($request)->send();
     }
 
-    public function map(array $methods, string $path, callable|string $handler): Route
+    public function map(array $methods, string $path, array|callable|string $handler): Route
     {
         return $this->getRouter()->map($methods, $path, $handler);
     }

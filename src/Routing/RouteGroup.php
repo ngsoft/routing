@@ -38,7 +38,7 @@ class RouteGroup implements MiddlewareCollectionInterface, RouteCollectorInterfa
         ($this->callback)($this);
     }
 
-    public function map(array $methods, string $path, callable|string $handler): Route
+    public function map(array $methods, string $path, array|callable|string $handler): Route
     {
         if (empty($methods = $this->filterMethods($methods)))
         {
