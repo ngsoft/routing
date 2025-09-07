@@ -77,9 +77,11 @@ class RouteGroup implements MiddlewareCollectionInterface, RouteCollectorInterfa
                 ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
             );
 
+            $pth     = $this->path($path);
+
             foreach ($this->router as $route)
             {
-                if ($route->getPattern() === $path)
+                if ($route->getPattern() === $pth)
                 {
                     foreach ($route->getMethods() as $method)
                     {
