@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace NGSOFT\Routing;
 
-use FastRoute\RouteCollector;
 use NGSOFT\Routing\Interface\MiddlewareCollectionInterface;
 use NGSOFT\Routing\Interface\RouteCollectorInterface;
 use NGSOFT\Routing\Internal\MethodFiltering;
@@ -20,7 +19,6 @@ class RouteGroup implements MiddlewareCollectionInterface, RouteCollectorInterfa
     /** @var callable */
     private $callback;
     private string $prefix;
-    private RouteCollector $collector;
 
     public function __construct(
         string $prefix,
@@ -28,9 +26,8 @@ class RouteGroup implements MiddlewareCollectionInterface, RouteCollectorInterfa
         private readonly Router $router,
         private readonly ?RouteGroup $group = null
     ) {
-        $this->callback  = $callback;
-        $this->prefix    = sprintf('/%s', ltrim($prefix, '/'));
-        $this->collector = $this->router->getRouteCollector();
+        $this->callback = $callback;
+        $this->prefix   = sprintf('/%s', ltrim($prefix, '/'));
     }
 
     public function __invoke()
@@ -40,6 +37,8 @@ class RouteGroup implements MiddlewareCollectionInterface, RouteCollectorInterfa
 
     public function map(array $methods, string $path, array|callable|string $handler): Route
     {
+        $isStar = $this->checkStarMethod($methods, $path);
+
         if (empty($methods = $this->filterMethods($methods)))
         {
             throw new \InvalidArgumentException('HTTP methods cannot be empty');
@@ -47,7 +46,8 @@ class RouteGroup implements MiddlewareCollectionInterface, RouteCollectorInterfa
         $this->router->register(
             $route = new Route($methods, $this->path($path), $handler, $this)
         );
-        $this->router->getRouteCollector()->addRoute($methods, $path, $route);
+
+        $this->router->getRouteCollector()->addRoute($isStar ? ['*'] : $methods, $path, $route);
         return $route;
     }
 
@@ -66,6 +66,33 @@ class RouteGroup implements MiddlewareCollectionInterface, RouteCollectorInterfa
     public function getGroup(): ?RouteGroup
     {
         return $this->group;
+    }
+
+    private function checkStarMethod(array &$methods, string $path): bool
+    {
+        if (['*'] === $methods)
+        {
+            $methods = array_combine(
+                ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+                ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
+            );
+
+            $pth     = $this->path($path);
+
+            foreach ($this->router as $route)
+            {
+                if ($route->getPattern() === $pth)
+                {
+                    foreach ($route->getMethods() as $method)
+                    {
+                        unset($methods[$method]);
+                    }
+                }
+            }
+            return true;
+        }
+
+        return false;
     }
 
     private function path(string $path): string

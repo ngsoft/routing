@@ -9,6 +9,7 @@ use FastRoute\RouteCollector;
 use FastRoute\RouteParser\Std;
 use NGSOFT\Routing\Interface\MiddlewareCollectionInterface;
 use NGSOFT\Routing\Interface\RouteCollectorInterface;
+use NGSOFT\Routing\Internal\FallbackRouteMiddleware;
 use NGSOFT\Routing\Internal\MethodFiltering;
 use NGSOFT\Routing\Internal\MiddlewareCollector;
 use NGSOFT\Routing\Internal\RouteCollection;
@@ -27,15 +28,16 @@ class Router implements Version, \Countable, \IteratorAggregate, RouteCollectorI
     private ?string $basePath = null;
     private array $routes     = [];
 
+    private Routing $routing;
+    private bool $hasFallback = false;
+
     public function __construct(?RouteCollector $collector = null)
     {
         $this->collector = $collector ?? new RouteCollector(
             new Std(),
             new GroupCountBasedGenerator()
         );
-        $this
-            ->add(RoutingMiddleware::class)
-            ->add(RouteMatcherMiddleware::class);
+        $this->add(RoutingMiddleware::class)->add(RouteMatcherMiddleware::class);
     }
 
     public function register(Route $route): static
@@ -84,17 +86,40 @@ class Router implements Version, \Countable, \IteratorAggregate, RouteCollectorI
         return $this->collector;
     }
 
+    /**
+     * Set a fallback route (when 404 error).
+     *
+     * @param array|callable|string $handler
+     *
+     * @return Route
+     */
+    public function setFallbackRoute(array|callable|string $handler): Route
+    {
+        if ($this->hasFallback)
+        {
+            throw new \LogicException('Fallback already set');
+        }
+        $this->hasFallback = true;
+        $route             = new Route(['GET', 'POST', 'PUT', 'PATCH', 'DELETE'], '', $handler);
+        $this->add($this->getRouting()->getContainer()->get(FallbackRouteMiddleware::class)
+            ->setRoute($route));
+        return $route;
+    }
+
     public function map(array $methods, string $path, array|callable|string $handler): Route
     {
+        $isStar = $this->checkStarMethod($methods, $path);
+
         if (empty($methods = $this->filterMethods($methods)))
         {
             throw new \InvalidArgumentException('HTTP methods cannot be empty');
         }
-        $path = $this->normalize($path);
+        $path   = $this->normalize($path);
         $this->register(
             $route = new Route($methods, $path, $handler)
         );
-        $this->collector->addRoute($methods, $path, $route);
+        $this->collector->addRoute($isStar ? ['*'] : $methods, $path, $route);
+
         return $route;
     }
 
@@ -128,6 +153,42 @@ class Router implements Version, \Countable, \IteratorAggregate, RouteCollectorI
     public function getIterator(): \Traversable
     {
         yield from $this->routes;
+    }
+
+    public function getRouting(): Routing
+    {
+        return $this->routing;
+    }
+
+    public function setRouting(Routing $routing): static
+    {
+        $this->routing ??= $routing;
+        return $this;
+    }
+
+    private function checkStarMethod(array &$methods, string $path): bool
+    {
+        if (['*'] === $methods)
+        {
+            $methods = array_combine(
+                ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+                ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
+            );
+
+            foreach ($this as $route)
+            {
+                if ($route->getPattern() === $path)
+                {
+                    foreach ($route->getMethods() as $method)
+                    {
+                        unset($methods[$method]);
+                    }
+                }
+            }
+            return true;
+        }
+
+        return false;
     }
 
     private function normalize(string $path): string

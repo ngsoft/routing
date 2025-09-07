@@ -97,7 +97,7 @@ class RouteInvoker
                 try
                 {
                     return $container->call($callable, $named);
-                } catch (ContainerExceptionInterface $err)
+                } catch (ContainerExceptionInterface)
                 {
                 }
 
@@ -105,7 +105,7 @@ class RouteInvoker
                 try
                 {
                     return $container->call($callable, $list);
-                } catch (ContainerExceptionInterface $err)
+                } catch (ContainerExceptionInterface)
                 {
                 }
 
@@ -113,7 +113,7 @@ class RouteInvoker
                 try
                 {
                     return $container->call($callable, $variadic);
-                } catch (ContainerExceptionInterface $err)
+                } catch (ContainerExceptionInterface)
                 {
                 }
 
@@ -121,7 +121,7 @@ class RouteInvoker
                 try
                 {
                     return $container->call($callable);
-                } catch (ContainerExceptionInterface $err)
+                } catch (ContainerExceptionInterface)
                 {
                 }
             } catch (\Throwable)

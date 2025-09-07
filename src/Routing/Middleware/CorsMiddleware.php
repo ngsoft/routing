@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace NGSOFT\Routing\Middleware;
 
+use NGSOFT\Routing\Interface\HighPriorityMiddlewareInterface;
 use NGSOFT\Routing\Internal\AttributeManager;
 use NGSOFT\Routing\Internal\FastRouteResult;
 use NGSOFT\Routing\Internal\MethodFiltering;
 use NGSOFT\Routing\RouteContext;
-use Reindeer\SymfonyMiddleware\Contracts\MiddlewareInterface;
 use Reindeer\SymfonyMiddleware\Contracts\RequestHandlerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class CorsMiddleware implements MiddlewareInterface
+class CorsMiddleware implements HighPriorityMiddlewareInterface
 {
     use AttributeManager;
     use MethodFiltering;
@@ -29,8 +29,6 @@ class CorsMiddleware implements MiddlewareInterface
 
     public function process(Request $request, RequestHandlerInterface $handler): Response
     {
-        $this->getConfigFromRoute($request);
-
         if (in_array($request->getMethod(), ['OPTIONS', 'HEAD']))
         {
             $response = new Response();
@@ -38,6 +36,8 @@ class CorsMiddleware implements MiddlewareInterface
         {
             $response = $handler->handle($this->setAttribute($request, __CLASS__, $this));
         }
+
+        $this->getConfigFromRoute($request);
 
         $origin = $request->headers->get('origin');
 
@@ -232,7 +232,7 @@ class CorsMiddleware implements MiddlewareInterface
 
         if ($result instanceof FastRouteResult)
         {
-            $this->allowedMethods = $result->getAllowed();
+            $this->allowedMethods = $this->filterMethods([...$result->getAllowed(), 'OPTIONS']);
         }
     }
 }

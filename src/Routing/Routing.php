@@ -40,6 +40,18 @@ final class Routing implements RequestHandlerInterface, EmitterInterface, Middle
         return $this;
     }
 
+    /**
+     * Set a fallback route (when 404 error).
+     *
+     * @param array|callable|string $handler
+     *
+     * @return Route
+     */
+    public function setFallbackRoute(array|callable|string $handler): Route
+    {
+        return $this->getRouter()->setFallbackRoute($handler);
+    }
+
     public function run(?Request $request = null): void
     {
         if ($request)
@@ -85,7 +97,7 @@ final class Routing implements RequestHandlerInterface, EmitterInterface, Middle
 
     public function getRouter(): Router
     {
-        return $this->router ??= $this->getContainer()->get(Router::class);
+        return $this->router ??= $this->getContainer()->get(Router::class)->setRouting($this);
     }
 
     private function getRequestHandler(): RequestHandlerInterface

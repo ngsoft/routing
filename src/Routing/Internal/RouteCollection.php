@@ -48,10 +48,14 @@ trait RouteCollection
 
     public function any(string $pattern, array|callable|string $handler): Route
     {
+        //        return $this->map([
+        //            'GET', 'POST',
+        //            'PUT', 'PATCH',
+        //            'DELETE',
+        //        ], $pattern, $handler);
+
         return $this->map([
-            'GET', 'POST',
-            'PUT', 'PATCH',
-            'DELETE', 'OPTIONS',
+            '*',
         ], $pattern, $handler);
     }
 }

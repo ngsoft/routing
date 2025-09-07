@@ -1,7 +1,7 @@
 {
   "name": "ngsoft/routing",
   "description": "Symfony foundation routing with PSR-15 adapters for standalone projects",
-  "version": "1.0.5",
+  "version": "1.1.0",
   "keywords": [
     "routing",
     "router",
@@ -34,18 +34,24 @@
   "require": {
     "php": ">=8.2",
     "guzzlehttp/psr7": "^2",
+    "ngsoft/container": "^3",
     "nikic/fast-route": "^1",
-    "reindeer/symfony-middleware": "^1",
-    "symfony/http-foundation": "^7",
-    "symfony/http-kernel": "^7",
-    "symfony/psr-http-message-bridge": "^7",
     "psr/http-server-handler": "^1",
     "psr/http-server-middleware": "^1",
-    "ngsoft/container": "^3"
+    "reindeer/symfony-middleware": "^1",
+    "symfony/http-foundation": "^6.4|^7",
+    "symfony/http-kernel": "^6.4|^7",
+    "symfony/psr-http-message-bridge": "^6.4|^7"
   },
   "require-dev": {
-    "symfony/var-dumper": "^7",
+    "symfony/var-dumper": "^6.4|^7",
     "friendsofphp/php-cs-fixer": "^3",
     "jetbrains/phpstorm-attributes": "dev-master"
+  },
+  "scripts": {
+    "serve": [
+      "Composer\\Config::disableProcessTimeout",
+      "php -S 127.0.0.1:8123 -t public"
+    ]
   }
 }

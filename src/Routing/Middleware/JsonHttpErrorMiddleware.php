@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace NGSOFT\Routing\Middleware;
 
-use Reindeer\SymfonyMiddleware\Contracts\MiddlewareInterface;
+use NGSOFT\Routing\Interface\HighPriorityMiddlewareInterface;
 use Reindeer\SymfonyMiddleware\Contracts\RequestHandlerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
-class JsonHttpErrorMiddleware implements MiddlewareInterface
+class JsonHttpErrorMiddleware implements HighPriorityMiddlewareInterface
 {
     private const REASON_PHRASES = [
         0   => 'Unassigned',
@@ -83,15 +83,15 @@ class JsonHttpErrorMiddleware implements MiddlewareInterface
         try
         {
             return $handler->handle($request);
-        } catch (HttpException $err)
+        } catch (HttpException $exception)
         {
             return new JsonResponse(
                 [
                     'success' => false,
-                    'message' => $err->getMessage() ?: self::REASON_PHRASES[$err->getStatusCode()] ?? self::REASON_PHRASES[0],
+                    'message' => $exception->getMessage() ?: self::REASON_PHRASES[$exception->getStatusCode()] ?? self::REASON_PHRASES[0],
                 ],
-                $err->getStatusCode(),
-                $err->getHeaders()
+                $exception->getStatusCode(),
+                $exception->getHeaders()
             );
         }
     }

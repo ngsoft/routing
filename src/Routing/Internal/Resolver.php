@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace NGSOFT\Routing\Internal;
 
 use NGSOFT\Routing\Adapter\HttpMessageBridge;
+use NGSOFT\Routing\Interface\HighPriorityMiddlewareInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Server\MiddlewareInterface as PSRMiddlewareInterface;
 use Reindeer\SymfonyMiddleware\Contracts\MiddlewareInterface;
@@ -23,12 +24,23 @@ class Resolver
 
     public function resolveQueue(array $queue): array
     {
-        foreach ($queue as $key => $value)
+        $high    = [];
+        $regular = [];
+
+        foreach ($queue as $value)
         {
-            $queue[$key] = $this->resolveMiddleware($value);
+            $middleware = $this->resolveMiddleware($value);
+
+            if ($middleware instanceof HighPriorityMiddlewareInterface)
+            {
+                $high[] = $middleware;
+                continue;
+            }
+
+            $regular[]  = $middleware;
         }
 
-        return $queue;
+        return array_merge($high, $regular);
     }
 
     public function resolve(array|callable|object|string $identifier): mixed
