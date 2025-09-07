@@ -37,7 +37,7 @@ class RouteGroup implements MiddlewareCollectionInterface, RouteCollectorInterfa
 
     public function map(array $methods, string $path, array|callable|string $handler): Route
     {
-        $isStar = $this->checkStarMethod($methods, $path);
+        $methods = $this->checkStarMethod($methods, $path);
 
         if (empty($methods = $this->filterMethods($methods)))
         {
@@ -47,7 +47,7 @@ class RouteGroup implements MiddlewareCollectionInterface, RouteCollectorInterfa
             $route = new Route($methods, $this->path($path), $handler, $this)
         );
 
-        $this->router->getRouteCollector()->addRoute($isStar ? ['*'] : $methods, $path, $route);
+        $this->router->getRouteCollector()->addRoute($methods, $path, $route);
         return $route;
     }
 
@@ -68,7 +68,7 @@ class RouteGroup implements MiddlewareCollectionInterface, RouteCollectorInterfa
         return $this->group;
     }
 
-    private function checkStarMethod(array &$methods, string $path): bool
+    private function checkStarMethod(array $methods, string $path): array
     {
         if (['*'] === $methods)
         {
@@ -77,11 +77,9 @@ class RouteGroup implements MiddlewareCollectionInterface, RouteCollectorInterfa
                 ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
             );
 
-            $pth     = $this->path($path);
-
             foreach ($this->router as $route)
             {
-                if ($route->getPattern() === $pth)
+                if ($route->getPattern() === $path)
                 {
                     foreach ($route->getMethods() as $method)
                     {
@@ -89,10 +87,10 @@ class RouteGroup implements MiddlewareCollectionInterface, RouteCollectorInterfa
                     }
                 }
             }
-            return true;
+            return array_values($methods);
         }
 
-        return false;
+        return $methods;
     }
 
     private function path(string $path): string

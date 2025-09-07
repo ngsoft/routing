@@ -108,17 +108,17 @@ class Router implements Version, \Countable, \IteratorAggregate, RouteCollectorI
 
     public function map(array $methods, string $path, array|callable|string $handler): Route
     {
-        $isStar = $this->checkStarMethod($methods, $path);
+        $methods = $this->checkStarMethod($methods, $path);
 
         if (empty($methods = $this->filterMethods($methods)))
         {
             throw new \InvalidArgumentException('HTTP methods cannot be empty');
         }
-        $path   = $this->normalize($path);
+        $path    = $this->normalize($path);
         $this->register(
             $route = new Route($methods, $path, $handler)
         );
-        $this->collector->addRoute($isStar ? ['*'] : $methods, $path, $route);
+        $this->collector->addRoute($methods, $path, $route);
 
         return $route;
     }
@@ -166,7 +166,7 @@ class Router implements Version, \Countable, \IteratorAggregate, RouteCollectorI
         return $this;
     }
 
-    private function checkStarMethod(array &$methods, string $path): bool
+    private function checkStarMethod(array $methods, string $path): array
     {
         if (['*'] === $methods)
         {
@@ -185,10 +185,10 @@ class Router implements Version, \Countable, \IteratorAggregate, RouteCollectorI
                     }
                 }
             }
-            return true;
+            return array_values($methods);
         }
 
-        return false;
+        return $methods;
     }
 
     private function normalize(string $path): string
